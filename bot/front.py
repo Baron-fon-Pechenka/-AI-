@@ -2,7 +2,7 @@ from telebot import (
     types
 )
 from core import bot
-
+from gigaChat import ai
 
 @bot.message_handler(commands=['start'])
 def hello(msg: types.Message):
@@ -21,7 +21,12 @@ def hello(msg: types.Message):
 
     bot.send_message(chat_id=msg.chat.id,
                      text='Привет, я информационная система для поступающих в КУБГАУ! '
-                          'Ты можешь спросить у меня что-то или выбрать команду из меню!',reply_markup=keyboard)
+                          'Ты можешь спросить у меня что-то или выбрать команду из меню!', reply_markup=keyboard)
+
+
+@bot.message_handler(content_types=['text'])
+def rnd_text_response(msg: types.Message):
+    bot.send_message(chat_id=msg.chat.id, text=ai.generate(msg.text))
 
 
 print('running...')
