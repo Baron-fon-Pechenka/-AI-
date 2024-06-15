@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 import logging
 import requests
 import pandas as pd
+import openpyxl
 
 logging.basicConfig(
     filename='../download_files.log',
@@ -116,4 +117,52 @@ def download_files(links, download_dir):
             raise DownloadError(link, "Неподдерживаемый тип ссылки")
 
 
-download_files(get_doc_links('/entrant/tselevoe-obuchenie/'), 'C:/Users/Дмитрий/Desktop/-AI-/documents')
+download_files(get_doc_links('/entrant/tselevoe-obuchenie/'), 'C:/Users/peper/PycharmProjects/-AI-/documents')
+def extract_data_from_xlsx(file_path):
+    """Извлекает все данные из xlsx-файла.
+file_path = "-AI-/documents/1FPXFkpDPbfJwTOvmjWXGucnoEjrrmCEZsmd6T_kcpOo.xlsx"  # Замените на путь к вашему файлу
+data = extract_data_from_xlsx(file_path)
+print(data)
+    """
+
+    try:
+        workbook = openpyxl.load_workbook(file_path)
+        worksheet = workbook.active  # Используем активный лист по умолчанию
+
+        data = []
+        for row in worksheet.iter_rows(values_only=True):
+            data.append(list(row))
+
+        return data
+
+    except FileNotFoundError:
+        print(f"Файл {file_path} не найден.")
+        return None
+    except Exception as e:
+        print(f"Ошибка при чтении файла: {e}")
+        return None
+
+
+def get_text(url):
+    """
+    Функция принимает URL-адрес, формирует полный URL, получает содержимое HTML-страницы
+    и возвращает текстовые данные, найденные на этой странице.
+    print(get_text("entrant/tselevoe-obuchenie/"))
+    """
+    base_url = "https://kubsau.ru/"
+    full_url = base_url + url.lstrip("/")
+
+    try:
+        response = requests.get(full_url)
+        response.raise_for_status()
+
+        soup = BeautifulSoup(response.content, "html.parser")
+        page_content = soup.find('div', class_='page-content')
+        if page_content:
+            text = page_content.get_text(separator=' ', strip=True)
+            return text
+        else:
+            return ""
+    except requests.exceptions.RequestException as e:
+        print(f"Ошибка при получении данных: {e}")
+        return []
