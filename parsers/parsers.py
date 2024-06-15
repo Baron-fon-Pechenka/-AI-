@@ -101,7 +101,6 @@ def download_files(links, download_dir):
 
         elif 'spreadsheets' in link:
             try:
-
                 file_name = link.split('/')[-2] + '.xlsx'
                 link = link[:link.rfind('/')] + "/export?format=xlsx"
                 file_path = f"{download_dir}/{file_name}"
