@@ -32,19 +32,27 @@ documents_dir = os.path.join(current_dir, "documents").replace('\\gigaChat', '')
 # Находим все txt файлы в папке "documents"
 txt_files = [f for f in os.listdir(documents_dir) if f.endswith(".txt")]
 
-for txt_file in txt_files:
-    txt_file_path = f"{documents_dir}/{txt_file}"
-    loader = TextLoader(txt_file_path, encoding='utf-8')
-    documents = loader.load()
-    text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=1000,
-        chunk_overlap=200,
-    )
-    documents = text_splitter.split_documents(documents)
-    print(f"Total documents: {len(documents)}")
+loader = TextLoader(f"{documents_dir}/{txt_files[0]}",encoding='utf-8')
+documents = loader.load()
+text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000,chunk_overlap=200)
+documents = text_splitter.split_documents(documents)
+
+# for txt_file in txt_files:
+#     txt_file_path = f"{documents_dir}/{txt_file}"
+#     loader = TextLoader(txt_file_path, encoding='utf-8')
+#     documents = loader.load()
+#     text_splitter = RecursiveCharacterTextSplitter(
+#         chunk_size=1000,
+#         chunk_overlap=200,
+#     )
+#     documents = text_splitter.split_documents(documents)
+#     print(f"Total documents: {len(documents)}")
 embeddings = GigaChatEmbeddings(
-    credentials=API_KEY, verify_ssl_certs=False
+    credentials=API_KEY,
+    verify_ssl_certs=False,
+    scope=os.getenv('SBERBANK_SCOPE')
 )
+print(embeddings)
 db = Chroma.from_documents(
     documents,
     embeddings,
