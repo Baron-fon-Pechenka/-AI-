@@ -1,0 +1,10 @@
+langchain
+pdfplumber
+chromadb
+bs4
+dotenv
+logging
+requests
+sqlalchemy
+pandas
+openpyxl
