@@ -8,6 +8,11 @@ from langchain.document_loaders import TextLoader
 import pdfplumber
 import os
 import pdfplumber
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_community.document_loaders import DirectoryLoader
+from chromadb.config import Settings
+from langchain_community.vectorstores import Chroma
+from langchain_community.embeddings.gigachat import GigaChatEmbeddings
 
 
 def convert_pdf_to_txt(documents_dir):
@@ -41,6 +46,21 @@ def convert_pdf_to_txt(documents_dir):
 
             print(f'PDF-файл "{filename}" успешно преобразован в TXT-файл "{txt_filename}"')
 
-
-# Вызываем функцию для преобразования PDF-файлов в TXT-файлы
-convert_pdf_to_txt('../documents')
+def files_to_embeddings():
+    loader = DirectoryLoader('C:\\Users\\Дмитрий\\Desktop\\-AI-\\documents')
+    documents = loader.load()
+    text_splitter = RecursiveCharacterTextSplitter(
+        chunk_size=1000,
+        chunk_overlap=200,
+    )
+    documents = text_splitter.split_documents(documents)
+    embeddings = GigaChatEmbeddings(
+        credentials=os.getenv('API_SBERBANK_KEY'), verify_ssl_certs=False
+    )
+    db = Chroma.from_documents(
+        documents,
+        embedding=embeddings,
+        client_settings=Settings(anonymized_telemetry=False),
+    )
+# # Вызываем функцию для преобразования PDF-файлов в TXT-файлы
+# convert_pdf_to_txt('../documents')
