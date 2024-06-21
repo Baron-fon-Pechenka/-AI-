@@ -1,0 +1,27 @@
+2024-06-15 12:23:38 - ERROR - Ошибка при скачивании Google Таблицы foreigners-info-2024.pdf: Error tokenizing data. C error: Expected 1 fields in line 4, saw 5
+
+2024-06-15 12:24:12 - ERROR - Ошибка при скачивании Google Таблицы foreigners-info-2024.pdf: Error tokenizing data. C error: Expected 1 fields in line 4, saw 5
+
+2024-06-15 12:26:56 - ERROR - Ошибка при скачивании Google Таблицы foreigners-info-2024.pdf: Error tokenizing data. C error: Expected 1 fields in line 4, saw 5
+
+2024-06-15 12:28:04 - ERROR - Ошибка при скачивании Google Таблицы foreigners-info-2024.pdf: Excel file format cannot be determined, you must specify an engine manually.
+2024-06-15 12:29:09 - ERROR - Ошибка при скачивании Google Таблицы foreigners-info-2024.pdf: Excel file format cannot be determined, you must specify an engine manually.
+2024-06-15 12:31:01 - ERROR - Ошибка при скачивании Google Таблицы foreigners-info-2024.pdf: Excel file format cannot be determined, you must specify an engine manually.
+2024-06-15 12:33:34 - ERROR - Ошибка при скачивании Google Таблицы foreigners-info-2024.pdf: Excel file format cannot be determined, you must specify an engine manually.
+2024-06-15 12:36:47 - ERROR - Ошибка при скачивании Google Таблицы foreignabiturient.xlsx: Excel file format cannot be determined, you must specify an engine manually.
+2024-06-15 12:38:03 - ERROR - Ошибка при скачивании Google Таблицы foreigners-info-2024.pdf: Excel file format cannot be determined, you must specify an engine manually.
+2024-06-15 12:39:12 - ERROR - Ошибка при скачивании Google Таблицы foreigners-info-2024.pdf: Excel file format cannot be determined, you must specify an engine manually.
+2024-06-15 12:42:38 - ERROR - Ошибка при скачивании Google Таблицы foreigners-info-2024.pdf: Excel file format cannot be determined, you must specify an engine manually.
+2024-06-15 12:43:10 - ERROR - Ошибка при скачивании Google Таблицы 1FPXFkpDPbfJwTOvmjWXGucnoEjrrmCEZsmd6T_kcpOo.xlsx: Excel file format cannot be determined, you must specify an engine manually.
+2024-06-15 12:44:12 - ERROR - Ошибка при скачивании Google Таблицы 1FPXFkpDPbfJwTOvmjWXGucnoEjrrmCEZsmd6T_kcpOo.xlsx: Missing optional dependency 'openpyxl'.  Use pip or conda to install openpyxl.
+2024-06-15 12:45:13 - ERROR - Ошибка при скачивании Google Таблицы 1FPXFkpDPbfJwTOvmjWXGucnoEjrrmCEZsmd6T_kcpOo.xlsx: File is not a zip file
+2024-06-15 12:52:11 - ERROR - Ошибка при скачивании Google Таблицы 1FPXFkpDPbfJwTOvmjWXGucnoEjrrmCEZsmd6T_kcpOo.xlsx: Error tokenizing data. C error: Expected 1 fields in line 4, saw 5
+
+2024-06-15 12:54:47 - ERROR - Ошибка при скачивании Google Таблицы 1FPXFkpDPbfJwTOvmjWXGucnoEjrrmCEZsmd6T_kcpOo.xlsx: <urlopen error no host given>
+2024-06-15 12:55:42 - ERROR - Ошибка при скачивании Google Таблицы 1FPXFkpDPbfJwTOvmjWXGucnoEjrrmCEZsmd6T_kcpOo.xlsx: <urlopen error no host given>
+2024-06-15 12:56:15 - ERROR - Ошибка при скачивании Google Таблицы 1FPXFkpDPbfJwTOvmjWXGucnoEjrrmCEZsmd6T_kcpOo.xlsx: 'utf-8' codec can't decode byte 0xcf in position 12: invalid continuation byte
+2024-06-15 12:57:42 - ERROR - Ошибка при скачивании Google Таблицы 1FPXFkpDPbfJwTOvmjWXGucnoEjrrmCEZsmd6T_kcpOo.xlsx: 'utf-8' codec can't decode byte 0xcf in position 12: invalid continuation byte
+2024-06-15 12:59:22 - ERROR - Ошибка при скачивании Google Таблицы 1FPXFkpDPbfJwTOvmjWXGucnoEjrrmCEZsmd6T_kcpOo.xlsx: Error tokenizing data. C error: Expected 4 fields in line 6, saw 5
+
+2024-06-15 13:00:38 - ERROR - Ошибка при скачивании Google Таблицы 1FPXFkpDPbfJwTOvmjWXGucnoEjrrmCEZsmd6T_kcpOo.xlsx: Error tokenizing data. C error: Expected 4 fields in line 6, saw 5
+
