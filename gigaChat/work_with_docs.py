@@ -1,11 +1,4 @@
-from langchain.schema import HumanMessage
-from langchain.chat_models.gigachat import GigaChat
 from dotenv import load_dotenv
-from langchain.text_splitter import (
-    RecursiveCharacterTextSplitter,
-)
-from langchain.document_loaders import TextLoader
-import pdfplumber
 import os
 import pdfplumber
 from langchain.text_splitter import RecursiveCharacterTextSplitter
@@ -13,6 +6,8 @@ from langchain_community.document_loaders import DirectoryLoader
 from chromadb.config import Settings
 from langchain_community.vectorstores import Chroma
 from langchain_community.embeddings.gigachat import GigaChatEmbeddings
+
+load_dotenv()
 
 
 def convert_pdf_to_txt(documents_dir):
@@ -46,8 +41,9 @@ def convert_pdf_to_txt(documents_dir):
 
             print(f'PDF-файл "{filename}" успешно преобразован в TXT-файл "{txt_filename}"')
 
+
 def files_to_embeddings():
-    loader = DirectoryLoader('C:\\Users\\Дмитрий\\Desktop\\-AI-\\documents')
+    loader = DirectoryLoader('C:\\Users\\Дмитрий\\Desktop\\-AI-\\documents\\txt')
     documents = loader.load()
     text_splitter = RecursiveCharacterTextSplitter(
         chunk_size=1000,
@@ -61,6 +57,11 @@ def files_to_embeddings():
         documents,
         embedding=embeddings,
         client_settings=Settings(anonymized_telemetry=False),
+
     )
+    return db
+
+
+db = files_to_embeddings()
 # # Вызываем функцию для преобразования PDF-файлов в TXT-файлы
-# convert_pdf_to_txt('../documents')
+# convert_pdf_to_txt('../documents/txt')
