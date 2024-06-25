@@ -1,10 +1,12 @@
 langchain
+langchain_community
 pdfplumber
 chromadb
-bs4
-dotenv
+beautifulsoup4
+python-dotenv
 logging
 requests
 sqlalchemy
 pandas
 openpyxl
+telebot
