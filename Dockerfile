@@ -18,10 +18,10 @@ COPY db app/db/
 COPY gigaChat app/gigaChat/
 COPY bot app/bot/
 COPY parsers app/parsers/
-
 COPY requirements.txt .
+
 RUN python3 -m pip install --upgrade pip && \
-    pip3 install --use-pep517 --no-cache-dir -r В.txt
+    pip3 install --use-pep517 --no-cache-dir -r requirements.txt
 
 COPY . .
 RUN cd /app/bot
