@@ -116,7 +116,6 @@ def download_files(links, download_dir):
             raise DownloadError(link, "Неподдерживаемый тип ссылки")
 
 
-download_files(get_doc_links('/entrant/tselevoe-obuchenie/'), 'C:/Users/peper/PycharmProjects/-AI-/documents')
 def extract_data_from_xlsx(file_path):
     """Извлекает все данные из xlsx-файла.
 file_path = "-AI-/documents/1FPXFkpDPbfJwTOvmjWXGucnoEjrrmCEZsmd6T_kcpOo.xlsx"  # Замените на путь к вашему файлу

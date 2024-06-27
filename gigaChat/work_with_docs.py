@@ -43,7 +43,7 @@ def convert_pdf_to_txt(documents_dir):
 
 
 def files_to_embeddings():
-    loader = DirectoryLoader('C:\\Users\\Дмитрий\\Desktop\\-AI-\\documents\\txt')
+    loader = DirectoryLoader('documents\\txt')
     documents = loader.load()
     text_splitter = RecursiveCharacterTextSplitter(
         chunk_size=1000,
@@ -63,5 +63,3 @@ def files_to_embeddings():
 
 
 db = files_to_embeddings()
-# # Вызываем функцию для преобразования PDF-файлов в TXT-файлы
-# convert_pdf_to_txt('../documents/txt')

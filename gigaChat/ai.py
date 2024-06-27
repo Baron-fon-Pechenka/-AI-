@@ -2,7 +2,7 @@ from langchain.schema import HumanMessage
 from langchain_community.chat_models.gigachat import GigaChat
 import os
 from dotenv import load_dotenv
-from work_with_docs import db
+from .work_with_docs import db
 
 load_dotenv()
 API_KEY = os.getenv('API_SBERBANK_KEY')

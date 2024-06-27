@@ -1,9 +1,6 @@
 FROM python:3.11-slim
 
 LABEL authors="Dmitry"
-LABEL org.opencontainers.image.title="My Python Bot"
-LABEL org.opencontainers.image.description="A Python-based bot application"
-LABEL org.opencontainers.image.source="https://github.com/your-username/your-repo"
 
 RUN apt-get update && apt-get install -y \
     build-essential \
@@ -17,13 +14,16 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
+COPY db app/db/
+COPY gigaChat app/gigaChat/
+COPY bot app/bot/
+COPY parsers app/parsers/
+
 COPY requirements.txt .
-RUN python -m pip install --upgrade pip && \
-    pip install --use-pep517 --no-cache-dir -r requirements.txt
+RUN python3 -m pip install --upgrade pip && \
+    pip3 install --use-pep517 --no-cache-dir -r В.txt
 
 COPY . .
-
-ENV PYTHONPATH=/app
-
-CMD ["python3", "bot/front.py"]
+RUN cd /app/bot
+CMD ["python3", "__init__.py"]
 EXPOSE 8080
