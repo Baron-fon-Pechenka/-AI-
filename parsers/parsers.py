@@ -164,3 +164,70 @@ def get_text(url):
     except requests.exceptions.RequestException as e:
         print(f"Ошибка при получении данных: {e}")
         return []
+
+
+current_dir = os.path.dirname(os.path.abspath(__file__))
+pdf_dir = os.path.join(current_dir, "gigaChat", "documents", "pdf")
+
+
+def Pars_entrant():
+    get_text("entrant/")
+    download_files(get_doc_links('/entrant/'), os.path.join(os.getcwd(), pdf_dir))
+
+
+def Pars_bakalav_spets_mag():
+    get_text("entrant/docs/bakalavriat-spetsialitet-magistratura/")
+    download_files(get_doc_links('/entrant/docs/bakalavriat-spetsialitet-magistratura/'),
+                   os.path.join(os.getcwd(), pdf_dir))
+
+
+# def Pars_foreign():
+#     get_text("foreignabiturient/")
+#     download_files(f"https://kubsau.ru/foreignabiturient/{get_doc_links('/foreignabiturient/')[0].replace("https://kubsau.ru/","")}", os.path.join(os.getcwd(), "documents"))
+def Pars_entrant_ways():
+    get_text("entrant/ways/")
+    download_files(get_doc_links('/entrant/ways/'), os.path.join(os.getcwd(), pdf_dir))
+
+
+def Pars_entrant_courses():
+    get_text("entrant/courses/")
+    download_files(get_doc_links('/entrant/courses/'), os.path.join(os.getcwd(), pdf_dir))
+
+
+def Pars_entrant_invalid():
+    get_text("entrant/invalid/")
+    gd = get_doc_links('/entrant/invalid/')
+    for i in range(len(gd)):  # Use range for integer indices
+        gd[i] = gd[i].replace("https://kubsau.ru/", "https://kubsau.ru//entrant/invalid/")
+    download_files(gd, os.path.join(os.getcwd(), pdf_dir))
+
+
+def Pars_entrant_tselevoe_obuchenie():
+    get_text("entrant/tselevoe-obuchenie/")
+    download_files(get_doc_links('/entrant/tselevoe-obuchenie/'), os.path.join(os.getcwd(), pdf_dir))
+
+
+def Pars_entrant_podig_obshchezhitiya():
+    get_text("entrant/podig/obshchezhitiya/")
+    download_files(get_doc_links('/entrant/podig/obshchezhitiya/'), os.path.join(os.getcwd(), pdf_dir))
+
+
+def Pars_military_anonce():
+    get_text("education/military/anonce/")
+    download_files(get_doc_links('/education/military/anonce/'), os.path.join(os.getcwd(), pdf_dir))
+
+
+def Pars_military_doc():
+    get_text("education/military/doc/")
+    download_files(get_doc_links('/education/military/doc/'), os.path.join(os.getcwd(), pdf_dir))
+
+
+Pars_entrant()
+Pars_bakalav_spets_mag()
+Pars_entrant_ways()
+Pars_entrant_courses()
+Pars_entrant_invalid()
+Pars_entrant_tselevoe_obuchenie()
+Pars_entrant_podig_obshchezhitiya()
+Pars_military_anonce()
+Pars_military_doc()

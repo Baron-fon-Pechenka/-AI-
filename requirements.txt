@@ -1,3 +1,8 @@
+gigachat
+psutil
+unstructured[pdf]
+networkx
+unstructured
 langchain
 langchain_community
 pdfplumber

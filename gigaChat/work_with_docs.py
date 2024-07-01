@@ -3,7 +3,6 @@ import os
 import pdfplumber
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import DirectoryLoader
-from chromadb.config import Settings
 from langchain_community.vectorstores import Chroma
 from langchain_community.embeddings.gigachat import GigaChatEmbeddings
 
@@ -43,7 +42,10 @@ def convert_pdf_to_txt(documents_dir):
 
 
 def files_to_embeddings():
-    loader = DirectoryLoader('documents\\txt')
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    folder_path = os.path.join(current_dir, "documents", "pdf")
+    db_path = os.path.join(current_dir, "documents", "chroma_db")
+    loader = DirectoryLoader(folder_path)
     documents = loader.load()
     text_splitter = RecursiveCharacterTextSplitter(
         chunk_size=1000,
@@ -53,13 +55,16 @@ def files_to_embeddings():
     embeddings = GigaChatEmbeddings(
         credentials=os.getenv('API_SBERBANK_KEY'), verify_ssl_certs=False
     )
-    db = Chroma.from_documents(
-        documents,
-        embedding=embeddings,
-        client_settings=Settings(anonymized_telemetry=False),
-
-    )
-    return db
+    if os.listdir(db_path):
+        db_chroma = Chroma(persist_directory=db_path, embedding_function=embeddings)
+    else:
+        db_chroma = Chroma.from_documents(
+            documents,
+            embeddings,
+            persist_directory=db_path
+        )
+        db_chroma.persist()
+    return db_chroma
 
 
 db = files_to_embeddings()
