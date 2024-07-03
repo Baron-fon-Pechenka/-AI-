@@ -45,7 +45,7 @@ def files_to_embeddings():
     current_dir = os.path.dirname(os.path.abspath(__file__))
     folder_path = os.path.join(current_dir, "documents", "pdf")
     db_path = os.path.join(current_dir, "documents", "chroma_db")
-    loader = DirectoryLoader(folder_path)
+    loader = DirectoryLoader(folder_path, show_progress=True)
     documents = loader.load()
     text_splitter = RecursiveCharacterTextSplitter(
         chunk_size=1000,

@@ -4,6 +4,9 @@ import logging
 import requests
 import pandas as pd
 import openpyxl
+from tqdm import tqdm
+from threading import Thread
+from tqdm import tqdm
 
 logging.basicConfig(
     filename='../download_files.log',
@@ -18,8 +21,8 @@ def get_doc_links(url):
     Функция принимает URL-адрес, формирует полный URL, получает содержимое HTML-страницы
     и возвращает список ссылок на файлы PDF и Google Таблицы, найденные на этой странице.
     """
-    base_url = "https://kubsau.ru/"
-    full_url = base_url + url.lstrip("/")
+    base_url = "https://kubsau.ru"
+    full_url = base_url + url
 
     try:
         response = requests.get(full_url)
@@ -27,7 +30,13 @@ def get_doc_links(url):
 
         soup = BeautifulSoup(response.content, "html.parser")
 
-        pdf_links = [base_url + link["href"] for link in soup.find_all("a", href=lambda href: href and "pdf" in href)]
+        pdf_links = []
+        for link in soup.find_all("a", href=lambda href: href and "pdf" in href):
+            pdf_link = base_url + link["href"]
+            pdf_links.append(pdf_link)
+        for i,link in enumerate(pdf_links):
+            if link.count('https://kubsau.ru/')==0:
+                pdf_links[i] = pdf_links[i].replace('https://kubsau.ru',full_url, 1)
         google_sheet_links = [link["href"] for link in
                               soup.find_all("a", href=lambda href: href and "docs.google.com/spreadsheets" in href)]
 
@@ -47,7 +56,7 @@ class DownloadError(Exception):
         error_message (str): Текст ошибки, описывающий причину ошибки.
     """
 
-    def __init__(self, file_name, error_message):
+    def __init__(self, file_name="Неизвестно", error_message=None):
         """
         Инициализирует объект DownloadError.
 
@@ -68,6 +77,36 @@ class DownloadError(Exception):
         return f"Ошибка при скачивании файла {self.file_name}: {self.error_message}"
 
 
+def download_file(url, file_path):
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+
+        with open(file_path, 'wb') as file:
+            file.write(response.content)
+    except requests.exceptions.RequestException as e:
+        logging.error(f"Ошибка при скачивании файла {file_path}: {e}")
+        raise DownloadError(file_path, str(e))
+def create_file_name(folder_path):
+    """
+    Создает название файла на основе количества файлов в папке.
+
+    Args:
+        folder_path (str): Путь к папке, в которой будут создаваться файлы.
+
+    Returns:
+        str: Название файла в формате "pdf_документ_НОМЕР.pdf".
+    """
+    # Получаем список файлов в папке
+    file_list = os.listdir(folder_path)
+
+    # Считаем количество файлов
+    file_count = len(file_list)
+
+    # Формируем название файла
+    file_name = f"pdf_документ_{file_count + 1}.pdf"
+
+    return file_name
 def download_files(links, download_dir):
     '''
     Скачивает PDF-файлы и Google Таблицы из списка ссылок в указанную папку.
@@ -76,7 +115,6 @@ def download_files(links, download_dir):
         links (list): список ссылок на PDF-файлы и Google Таблицы
         download_dir (str): путь к папке, куда будут сохранены файлы
     '''
-    # Создаем папку, если она не существует
     os.makedirs(download_dir, exist_ok=True)
 
     # Перебираем список ссылок
@@ -85,32 +123,33 @@ def download_files(links, download_dir):
             while not link.endswith('pdf'):
                 link = link[:-1]
             # Получаем имя файла из ссылки
-            file_name = os.path.basename(link)
-            file_path = f"{download_dir}/{file_name}"
+            file_name = create_file_name(download_dir)
+            file_path = f"{download_dir}\\{file_name}"
 
             # Скачиваем PDF-файл
             try:
-                response = requests.get(link)
-                response.raise_for_status()
-
-                with open(file_path, 'wb') as file:
-                    file.write(response.content)
-
-            except requests.exceptions.RequestException as e:
-                logging.error(f"Ошибка при скачивании файла {file_name}: {e}")
-                raise DownloadError(f"Ошибка при скачивании файла {file_name}: {e}")
+                t = Thread(target=download_file, args=(link, file_path))
+                t.start()
+                with tqdm(total=100, unit='%', desc=f"Скачивание {file_name}", leave=False) as pbar:
+                    while t.is_alive():
+                        pbar.update(1)
+            except DownloadError as e:
+                logging.error(f"Ошибка при скачивании файла {e.file_name}: {e.message}")
+                raise e
 
         elif 'spreadsheets' in link:
+            file_name = link.split('/')[-2] + '.xlsx'
             try:
-                file_name = link.split('/')[-2] + '.xlsx'
                 link = link[:link.rfind('/')] + "/export?format=xlsx"
-                file_path = f"{download_dir}/{file_name}"
-                df = pd.read_excel(link)
-                df.to_excel(file_path, index=False)
-                print(f"Скачана Google Таблица {file_name}")
-            except Exception as e:
-                logging.error(f"Ошибка при скачивании Google Таблицы {file_name}: {e}")
-                raise DownloadError(file_name, str(e))
+                file_path = f"{download_dir.replace('pdf','xlsx')}/{file_name}"
+                t = Thread(target=download_file, args=(link, file_path))
+                t.start()
+                with tqdm(total=100, unit='%', desc=f"Скачивание {file_name}", leave=False) as pbar:
+                    while t.is_alive():
+                        pbar.update(1)
+            except DownloadError as e:
+                logging.error(f"Ошибка при скачивании Google таблицы: {e.message}")
+                raise e
         else:
             logging.error(f"Неподдерживаемый тип ссылки: {link}")
             raise DownloadError(link, "Неподдерживаемый тип ссылки")
@@ -165,69 +204,27 @@ def get_text(url):
         print(f"Ошибка при получении данных: {e}")
         return []
 
+def parse_all():
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    pdf_dir = os.path.join(current_dir, "gigaChat", "documents", "pdf").replace('parsers\\', '')
+    paths = [
+        "entrant/invalid/",
+        "entrant/",
+        "entrant/docs/bakalavriat-spetsialitet-magistratura/",
+        "entrant/ways/",
+        "entrant/courses/",
+        "entrant/tselevoe-obuchenie/",
+        "entrant/podig/obshchezhitiya/",
+        "education/military/anonce/",
+        "education/military/doc/"
+    ]
 
-current_dir = os.path.dirname(os.path.abspath(__file__))
-pdf_dir = os.path.join(current_dir, "gigaChat", "documents", "pdf")
+    with tqdm(total=len(paths), desc='Parsing paths') as pbar:
+        for path in paths:
+            get_text(path)
+            download_files(get_doc_links('/' + path), os.path.join(os.getcwd(), pdf_dir))
+            pbar.update(1)
+        print('-' * 100, '\nВсе файлы скачаны!\n', '-' * 100)
 
-
-def Pars_entrant():
-    get_text("entrant/")
-    download_files(get_doc_links('/entrant/'), os.path.join(os.getcwd(), pdf_dir))
-
-
-def Pars_bakalav_spets_mag():
-    get_text("entrant/docs/bakalavriat-spetsialitet-magistratura/")
-    download_files(get_doc_links('/entrant/docs/bakalavriat-spetsialitet-magistratura/'),
-                   os.path.join(os.getcwd(), pdf_dir))
-
-
-# def Pars_foreign():
-#     get_text("foreignabiturient/")
-#     download_files(f"https://kubsau.ru/foreignabiturient/{get_doc_links('/foreignabiturient/')[0].replace("https://kubsau.ru/","")}", os.path.join(os.getcwd(), "documents"))
-def Pars_entrant_ways():
-    get_text("entrant/ways/")
-    download_files(get_doc_links('/entrant/ways/'), os.path.join(os.getcwd(), pdf_dir))
-
-
-def Pars_entrant_courses():
-    get_text("entrant/courses/")
-    download_files(get_doc_links('/entrant/courses/'), os.path.join(os.getcwd(), pdf_dir))
-
-
-def Pars_entrant_invalid():
-    get_text("entrant/invalid/")
-    gd = get_doc_links('/entrant/invalid/')
-    for i in range(len(gd)):  # Use range for integer indices
-        gd[i] = gd[i].replace("https://kubsau.ru/", "https://kubsau.ru//entrant/invalid/")
-    download_files(gd, os.path.join(os.getcwd(), pdf_dir))
-
-
-def Pars_entrant_tselevoe_obuchenie():
-    get_text("entrant/tselevoe-obuchenie/")
-    download_files(get_doc_links('/entrant/tselevoe-obuchenie/'), os.path.join(os.getcwd(), pdf_dir))
-
-
-def Pars_entrant_podig_obshchezhitiya():
-    get_text("entrant/podig/obshchezhitiya/")
-    download_files(get_doc_links('/entrant/podig/obshchezhitiya/'), os.path.join(os.getcwd(), pdf_dir))
-
-
-def Pars_military_anonce():
-    get_text("education/military/anonce/")
-    download_files(get_doc_links('/education/military/anonce/'), os.path.join(os.getcwd(), pdf_dir))
-
-
-def Pars_military_doc():
-    get_text("education/military/doc/")
-    download_files(get_doc_links('/education/military/doc/'), os.path.join(os.getcwd(), pdf_dir))
-
-
-Pars_entrant()
-Pars_bakalav_spets_mag()
-Pars_entrant_ways()
-Pars_entrant_courses()
-Pars_entrant_invalid()
-Pars_entrant_tselevoe_obuchenie()
-Pars_entrant_podig_obshchezhitiya()
-Pars_military_anonce()
-Pars_military_doc()
+def run():
+    parse_all()

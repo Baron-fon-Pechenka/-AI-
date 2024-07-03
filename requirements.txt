@@ -1,6 +1,7 @@
 gigachat
 psutil
 unstructured[pdf]
+python-poppler
 networkx
 unstructured
 langchain
