@@ -5,6 +5,7 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import DirectoryLoader
 from langchain_community.vectorstores import Chroma
 from langchain_community.embeddings.gigachat import GigaChatEmbeddings
+from langchain_community.document_loaders.pdf import UnstructuredPDFLoader
 
 load_dotenv()
 
@@ -43,28 +44,38 @@ def convert_pdf_to_txt(documents_dir):
 
 def files_to_embeddings():
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    folder_path = os.path.join(current_dir, "documents", "pdf")
-    db_path = os.path.join(current_dir, "documents", "chroma_db")
-    loader = DirectoryLoader(folder_path, show_progress=True)
-    documents = loader.load()
-    text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=1000,
-        chunk_overlap=200,
-    )
-    documents = text_splitter.split_documents(documents)
+    pdf_folder_path = os.path.join(current_dir, "documents", "pdf")
+    chroma_db_path = os.path.join(current_dir, "documents", "chroma_db")
     embeddings = GigaChatEmbeddings(
         credentials=os.getenv('API_SBERBANK_KEY'), verify_ssl_certs=False
     )
-    if os.listdir(db_path):
-        db_chroma = Chroma(persist_directory=db_path, embedding_function=embeddings)
+    if os.listdir(chroma_db_path):
+        vectorstore = Chroma(persist_directory=chroma_db_path, embedding_function=embeddings)
     else:
-        db_chroma = Chroma.from_documents(
-            documents,
-            embeddings,
-            persist_directory=db_path
-        )
-        db_chroma.persist()
-    return db_chroma
+        vectorstore = Chroma(persist_directory=chroma_db_path, embedding_function=embeddings)
+        for filename in os.listdir(pdf_folder_path):
+            # Создаем полный путь к файлу
+            file_path = os.path.join(pdf_folder_path, filename)
+
+            # Создаем экземпляр PDFLoader для загрузки документа
+            loader = UnstructuredPDFLoader(file_path)
+
+            # Загружаем документ
+            try:
+                doc = loader.load()
+                print(file_path)
+                # Разбиваем документ на чанки
+                text_splitter = RecursiveCharacterTextSplitter(
+                    chunk_size=1000,
+                    chunk_overlap=200
+                )
+                chunks = text_splitter.split_documents(doc)
+
+                # Добавляем чанки в базу данных Chroma
+                vectorstore.add_documents(chunks)
+            except Exception as e:
+                print(e)
+    return vectorstore
 
 
 db = files_to_embeddings()

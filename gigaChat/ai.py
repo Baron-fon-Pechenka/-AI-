@@ -10,23 +10,27 @@ API_KEY = os.getenv('API_SBERBANK_KEY')
 chat = GigaChat(credentials=API_KEY, verify_ssl_certs=False, scope="GIGACHAT_API_PERS")
 
 def check_answer(query, text_to_check):
+    print('!'*10000)
     system_message = SystemMessage(
         content=f"""
                 Вот вопрос, который был задан
-                {query}
-                Дай однозначный ответ , является ли присланный тебе ответ адекватным и относится
+                {query}.
+                Дай однозначный ответ , являются ли присланные тебе данные адекватным ответам и относится
                 ли он к обучению в КУБГАУ (Кубанский Государственный Аграрный Университет). 
                 В ответе напиши 
                 только одно слово: "да" или "нет"
+                Вот данные:
+                {text_to_check}
                 """
     )
-    messages = [system_message, HumanMessage(content=text_to_check)]
+    messages = [system_message]
     res = chat(messages)
     messages.append(res)
     return res.content
-def reformat_text(text_to_format):
+def reformat_text(text_to_format, query):
+    print('?'*10000)
     system_message = SystemMessage(
-        content="""
+        content=f"""
             Вы получили запрос, состоящий из условия и текстовых данных. 
             Ваша задача - привести текстовую информацию к красивому формату, 
             не удаляя и не добавляя информацию.
@@ -38,6 +42,7 @@ def reformat_text(text_to_format):
             Вы должны только отформатировать ее должным образом.
             Я рассчитываю на ваше понимание инструкций и надеюсь, что вы 
             предоставите мне ответ в желаемом формате.
+            Условие: {query}
             """
     )
     messages = [system_message, HumanMessage(content=text_to_format)]
@@ -47,7 +52,7 @@ def reformat_text(text_to_format):
 
 
 def find_in_files(query: str):
-    docs = db.similarity_search(query + '\n речь идёт о КУБГАУ', k=6)
+    docs = db.similarity_search(query , k=6)
     file_paths = []
     text = ''
     if len(docs) > 0:

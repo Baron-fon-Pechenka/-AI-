@@ -2,7 +2,7 @@ import os
 from bs4 import BeautifulSoup
 import logging
 import requests
-import pandas as pd
+import hashlib
 import openpyxl
 from tqdm import tqdm
 from threading import Thread
@@ -34,9 +34,9 @@ def get_doc_links(url):
         for link in soup.find_all("a", href=lambda href: href and "pdf" in href):
             pdf_link = base_url + link["href"]
             pdf_links.append(pdf_link)
-        for i,link in enumerate(pdf_links):
-            if link.count('https://kubsau.ru/')==0:
-                pdf_links[i] = pdf_links[i].replace('https://kubsau.ru',full_url, 1)
+        for i, link in enumerate(pdf_links):
+            if link.count('https://kubsau.ru/') == 0:
+                pdf_links[i] = pdf_links[i].replace('https://kubsau.ru', full_url, 1)
         google_sheet_links = [link["href"] for link in
                               soup.find_all("a", href=lambda href: href and "docs.google.com/spreadsheets" in href)]
 
@@ -87,6 +87,8 @@ def download_file(url, file_path):
     except requests.exceptions.RequestException as e:
         logging.error(f"Ошибка при скачивании файла {file_path}: {e}")
         raise DownloadError(file_path, str(e))
+
+
 def create_file_name(folder_path):
     """
     Создает название файла на основе количества файлов в папке.
@@ -107,6 +109,17 @@ def create_file_name(folder_path):
     file_name = f"pdf_документ_{file_count + 1}.pdf"
 
     return file_name
+
+
+def calculate_file_hash(file_path):
+    """Вычисляет хэш-сумму файла"""
+    with open(file_path, 'rb') as file:
+        file_hash = hashlib.sha256()
+        while chunk := file.read(8192):
+            file_hash.update(chunk)
+    return file_hash.hexdigest()
+
+
 def download_files(links, download_dir):
     '''
     Скачивает PDF-файлы и Google Таблицы из списка ссылок в указанную папку.
@@ -119,37 +132,44 @@ def download_files(links, download_dir):
 
     # Перебираем список ссылок
     for link in links:
+        folder_file_hashes = [calculate_file_hash(os.path.join(download_dir, f)) for f in os.listdir(download_dir) if
+                              f.endswith('.pdf')]
         if 'pdf' in link:
             while not link.endswith('pdf'):
                 link = link[:-1]
-            # Получаем имя файла из ссылки
             file_name = create_file_name(download_dir)
             file_path = f"{download_dir}\\{file_name}"
 
             # Скачиваем PDF-файл
             try:
-                t = Thread(target=download_file, args=(link, file_path))
-                t.start()
-                with tqdm(total=100, unit='%', desc=f"Скачивание {file_name}", leave=False) as pbar:
-                    while t.is_alive():
-                        pbar.update(1)
+                response = requests.get(link)
+                downloaded_file_hash = hashlib.sha256(response.content).hexdigest()
+                if downloaded_file_hash in folder_file_hashes:
+                    print(f"\033[1;91m{file_name} является дубликатом одного из файлов в папке.\033[0m")
+                else:
+                    with open(file_path, 'wb') as file:
+                        file.write(response.content)
+                        print(f"\033[1;92mСкачан {file_name}\033[0m")
+
             except DownloadError as e:
-                logging.error(f"Ошибка при скачивании файла {e.file_name}: {e.message}")
+                logging.error(f"Ошибка при скачивании файла {e.file_name}: {e.error_message}")
                 raise e
 
         elif 'spreadsheets' in link:
             file_name = link.split('/')[-2] + '.xlsx'
             try:
                 link = link[:link.rfind('/')] + "/export?format=xlsx"
-                file_path = f"{download_dir.replace('pdf','xlsx')}/{file_name}"
+                file_path = f"{download_dir.replace('pdf', 'xlsx')}/{file_name}"
                 t = Thread(target=download_file, args=(link, file_path))
                 t.start()
-                with tqdm(total=100, unit='%', desc=f"Скачивание {file_name}", leave=False) as pbar:
-                    while t.is_alive():
-                        pbar.update(1)
-            except DownloadError as e:
-                logging.error(f"Ошибка при скачивании Google таблицы: {e.message}")
-                raise e
+                response = requests.get(link)
+                response.raise_for_status()
+
+                with open(file_path, 'wb') as file:
+                    file.write(response.content)
+            except requests.exceptions.RequestException as e:
+                logging.error(f"Ошибка при скачивании файла {file_name}: {e}")
+                raise DownloadError(file_name, str(e))
         else:
             logging.error(f"Неподдерживаемый тип ссылки: {link}")
             raise DownloadError(link, "Неподдерживаемый тип ссылки")
@@ -204,6 +224,7 @@ def get_text(url):
         print(f"Ошибка при получении данных: {e}")
         return []
 
+
 def parse_all():
     current_dir = os.path.dirname(os.path.abspath(__file__))
     pdf_dir = os.path.join(current_dir, "gigaChat", "documents", "pdf").replace('parsers\\', '')
@@ -225,6 +246,7 @@ def parse_all():
             download_files(get_doc_links('/' + path), os.path.join(os.getcwd(), pdf_dir))
             pbar.update(1)
         print('-' * 100, '\nВсе файлы скачаны!\n', '-' * 100)
+
 
 def run():
     parse_all()
