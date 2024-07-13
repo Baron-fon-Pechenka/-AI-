@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="index.js"></script>
+    <title>Admin панель</title>
+  </head>
+  <body>
+    <button onclick="{handleLaunchBot()}">Запуск бота</button>
+    <input type="file" id="file" />
+    <button
+      id="openFileButton"
+      onclick="{handleOpenFile(document.getElementById('file'))}"
+    >
+      Open File
+    </button>
+    <div>
+      <button id="saveEnvBtn" onclick="{handleSaveFile()}">Save</button>
+    </div>
+  </body>
+</html>
