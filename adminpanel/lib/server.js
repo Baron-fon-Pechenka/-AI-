@@ -6,7 +6,7 @@ const axios = require("axios");
 require("dotenv").config({ path: path.join(__dirname, "../../.env") });
 
 const app = express();
-const port = 3000;
+const port = 443; // Изменяем порт на 443
 
 app.use(express.json());
 app.use(cors());
@@ -48,18 +48,18 @@ app.post("/toggle-bot", async (req, res) => {
     const response = await axios.post(
       `https://api.telegram.org/bot${botToken}/setWebhook`,
       {
-        url: `https://${req.hostname}:${port}/webhook`, // Пример: https://example.com:3000/webhook
+        url: `https://${req.hostname}:${port}/webhook`, // Пример: https://example.com/webhook
       }
     );
     console.log("Ответ от Telegram API:", response.data);
     res.send("Бот успешно настроен");
   } catch (error) {
     console.error("Ошибка при настройке бота:", error.message);
+    console.log("Ответ от Telegram API:", error.response.data);
     res.status(500).send("Ошибка при настройке бота");
   }
 });
 
 app.listen(port, () => {
   console.log(`Сервер запущен на порту ${port}`);
-  console.log("Токен бота:", botToken);
 });
