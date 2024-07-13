@@ -2,10 +2,10 @@ from dotenv import load_dotenv
 import os
 import pdfplumber
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_community.document_loaders import DirectoryLoader
 from langchain_community.vectorstores import Chroma
 from langchain_community.embeddings.gigachat import GigaChatEmbeddings
-from langchain_community.document_loaders.pdf import UnstructuredPDFLoader
+from langchain_community.document_loaders import pdf
+from tqdm import tqdm
 
 load_dotenv()
 
@@ -53,28 +53,31 @@ def files_to_embeddings():
         vectorstore = Chroma(persist_directory=chroma_db_path, embedding_function=embeddings)
     else:
         vectorstore = Chroma(persist_directory=chroma_db_path, embedding_function=embeddings)
-        for filename in os.listdir(pdf_folder_path):
-            # Создаем полный путь к файлу
-            file_path = os.path.join(pdf_folder_path, filename)
+        paths = os.listdir(pdf_folder_path)
+        with tqdm(total=len(paths), desc='Loading docs') as pbar:
+            for filename in os.listdir(pdf_folder_path):
+                # Создаем полный путь к файлу
+                file_path = os.path.join(pdf_folder_path, filename)
 
-            # Создаем экземпляр PDFLoader для загрузки документа
-            loader = UnstructuredPDFLoader(file_path)
+                # Создаем экземпляр PDFLoader для загрузки документа
+                loader = pdf.PyMuPDFLoader(file_path)
+                # Загружаем документ
+                try:
+                    doc = loader.load()
+                    # Разбиваем документ на чанки
+                    text_splitter = RecursiveCharacterTextSplitter(
+                        chunk_size=1500,
+                        chunk_overlap=20
+                    )
+                    chunks = text_splitter.split_documents(doc)
 
-            # Загружаем документ
-            try:
-                doc = loader.load()
-                print(file_path)
-                # Разбиваем документ на чанки
-                text_splitter = RecursiveCharacterTextSplitter(
-                    chunk_size=1000,
-                    chunk_overlap=200
-                )
-                chunks = text_splitter.split_documents(doc)
+                    vectorstore.add_documents(chunks)
+                except Exception as e:
+                    print(f"{filename} - {e}")
+                finally:
+                    pbar.update(1)
 
-                # Добавляем чанки в базу данных Chroma
-                vectorstore.add_documents(chunks)
-            except Exception as e:
-                print(e)
+
     return vectorstore
 
 

@@ -1,4 +1,5 @@
 from langchain.schema import SystemMessage
+from langchain.schema import BaseMessage
 from langchain.schema import HumanMessage
 from langchain_community.chat_models.gigachat import GigaChat
 import os
@@ -10,25 +11,22 @@ API_KEY = os.getenv('API_SBERBANK_KEY')
 chat = GigaChat(credentials=API_KEY, verify_ssl_certs=False, scope="GIGACHAT_API_PERS")
 
 def check_answer(query, text_to_check):
-    print('!'*10000)
+    print(query[:-54])
     system_message = SystemMessage(
         content=f"""
-                Вот вопрос, который был задан
-                {query}.
-                Дай однозначный ответ , являются ли присланные тебе данные адекватным ответам и относится
-                ли он к обучению в КУБГАУ (Кубанский Государственный Аграрный Университет). 
-                В ответе напиши 
-                только одно слово: "да" или "нет"
-                Вот данные:
-                {text_to_check}
-                """
+            Вопрос :"{query[:-54]}".
+            Ответ: {text_to_check}.
+            
+            1) Является ли ответ на вопрос адекватным? (да/нет).
+            2) Является ли вопрос прямо и чётко относящимся к обучению или поступлению в учебное заведение? (да/нет).
+            На выходе выдай односложно "да" , если на оба вопроса ты ответил "да", в противном случае выдай "нет".
+            """
     )
     messages = [system_message]
     res = chat(messages)
     messages.append(res)
     return res.content
 def reformat_text(text_to_format, query):
-    print('?'*10000)
     system_message = SystemMessage(
         content=f"""
             Вы получили запрос, состоящий из условия и текстовых данных. 
@@ -59,7 +57,6 @@ def find_in_files(query: str):
         for ind, doc in enumerate(docs):
             file_paths.append(doc.metadata['source'].replace('txt/', '').replace('.txt', '.pdf'))
             text += f"{ind + 1})\n {doc.page_content}\n{'-' * 8}"
-        print(text,file_paths)
         return text, set(file_paths)
 
     else:

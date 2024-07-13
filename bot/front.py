@@ -34,9 +34,10 @@ def rnd_text_response(msg: types.Message):
                     bot.send_message(chat_id=msg.chat.id,
                                      text='Ваш запрос в обработке, пожалуйста, подождите несколько секунд...')
                     ]
-    query = msg.text + '\n Это вопрос, который задал человек, он задал его боту-помощнику для поступающих в КУБГАУ ' \
-                       '(Кубанский государственный аграрный университет). '
+    query = msg.text + '\nКУБГАУ' \
+                       '(Кубанский государственный аграрный университет)'
     text, file_paths = ai.find_in_files(query)
+    print(file_paths)
     right = ai.check_answer(query=query, text_to_check=text)
     if right.lower() == "да":
         for msg_for_del in msgs_for_del:
@@ -45,7 +46,7 @@ def rnd_text_response(msg: types.Message):
         if file_paths is not None:
             bot.send_message(chat_id=msg.chat.id, text=ai.reformat_text(msg.text, query))
             bot.send_message(chat_id=msg.chat.id, text='Вот откуда я взял эту информацию:')
-            msgs_for_del.append(bot.send_message(chat_id=msg.chat.id, text='Файлы прогружаются...'))
+            msgs_for_del.append(bot.send_message(chat_id=msg.chat.id, text='Файлы загружаются...'))
             for file_path in file_paths:
                 with open(file_path, 'rb') as file:
                     bot.send_document(msg.chat.id, file)
@@ -54,7 +55,8 @@ def rnd_text_response(msg: types.Message):
         else:
             bot.send_message(chat_id=msg.chat.id, text=text)
     else:
-        bot.send_message(chat_id=msg.chat.id, text='Увы, я не знаю ответа на Ваш вопрос :(')
+        bot.send_message(chat_id=msg.chat.id, text='Увы, я не знаю ответа на Ваш вопрос :(\nесли Вы уверены, '
+                                                   'что я должен знать ответ - попробуйте задать вопрос иначе')
         for msg_for_del in msgs_for_del:
             bot.delete_message(chat_id=msg.chat.id, message_id=msg_for_del.message_id)
 

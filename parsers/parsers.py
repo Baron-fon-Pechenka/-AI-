@@ -6,7 +6,6 @@ import hashlib
 import openpyxl
 from tqdm import tqdm
 from threading import Thread
-from tqdm import tqdm
 
 logging.basicConfig(
     filename='../download_files.log',
@@ -129,8 +128,6 @@ def download_files(links, download_dir):
         download_dir (str): путь к папке, куда будут сохранены файлы
     '''
     os.makedirs(download_dir, exist_ok=True)
-
-    # Перебираем список ссылок
     for link in links:
         folder_file_hashes = [calculate_file_hash(os.path.join(download_dir, f)) for f in os.listdir(download_dir) if
                               f.endswith('.pdf')]
@@ -139,8 +136,6 @@ def download_files(links, download_dir):
                 link = link[:-1]
             file_name = create_file_name(download_dir)
             file_path = f"{download_dir}\\{file_name}"
-
-            # Скачиваем PDF-файл
             try:
                 response = requests.get(link)
                 downloaded_file_hash = hashlib.sha256(response.content).hexdigest()
@@ -240,12 +235,10 @@ def parse_all():
         "education/military/doc/"
     ]
 
-    with tqdm(total=len(paths), desc='Parsing paths') as pbar:
-        for path in paths:
-            get_text(path)
-            download_files(get_doc_links('/' + path), os.path.join(os.getcwd(), pdf_dir))
-            pbar.update(1)
-        print('-' * 100, '\nВсе файлы скачаны!\n', '-' * 100)
+    for path in paths:
+        get_text(path)
+        download_files(get_doc_links('/' + path), os.path.join(os.getcwd(), pdf_dir))
+    print('-' * 100, '\nВсе файлы скачаны!\n', '-' * 100)
 
 
 def run():
