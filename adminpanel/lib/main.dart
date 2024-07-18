@@ -4,7 +4,7 @@ import 'dart:convert';
 
 Future<String> readFile(String filePath) async {
   final response =
-      await http.get(Uri.parse('http://localhost:443/file?path=$filePath'));
+      await http.get(Uri.parse('http://26.120.47.91:443/file?path=$filePath'));
   if (response.statusCode == 200) {
     return response.body;
   } else {
@@ -14,7 +14,7 @@ Future<String> readFile(String filePath) async {
 
 Future<void> writeFile(String filePath, String content) async {
   final response = await http.post(
-    Uri.parse('http://localhost:443/file'),
+    Uri.parse('http://26.120.47.91:443/file'),
     headers: {
       'Content-Type': 'application/json',
     },
@@ -31,7 +31,7 @@ Future<void> writeFile(String filePath, String content) async {
 
 Future<void> toggleBot(bool enable) async {
   final response = await http.post(
-    Uri.parse('http://localhost:443/toggle-bot'),
+    Uri.parse('http://26.120.47.91:443/toggle-bot'),
     headers: {
       'Content-Type': 'application/json',
     },

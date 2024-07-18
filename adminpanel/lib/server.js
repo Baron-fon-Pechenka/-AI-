@@ -2,16 +2,16 @@ const express = require("express");
 const fs = require("fs");
 const path = require("path");
 const cors = require("cors");
-const axios = require("axios");
+const { spawn } = require("child_process");
+const psTree = require("ps-tree");
 require("dotenv").config({ path: path.join(__dirname, "../../.env") });
 
 const app = express();
-const port = 443; // Изменяем порт на 443
+const port = 443;
 
 app.use(express.json());
 app.use(cors());
 
-const botToken = process.env.BOT_TOKEN;
 const rootPath = path.resolve(__dirname, "../..");
 
 app.get("/file", (req, res) => {
@@ -37,26 +37,61 @@ app.post("/file", (req, res) => {
   });
 });
 
-app.post("/toggle-bot", async (req, res) => {
+let botProcess = null;
+
+app.post("/toggle-bot", (req, res) => {
   const enable = req.body.enable;
+  const botScriptPath = path.resolve(__dirname, "tgbot.py");
+  const pythonPath =
+    "C:/Users/yuraa/AppData/Local/Programs/Python/Python310/python.exe"; // замените на путь к вашему интерпретатору Python
 
-  if (!botToken) {
-    return res.status(500).send("Отсутствует токен бота в .env");
-  }
+  if (enable) {
+    if (botProcess) {
+      return res.send("Бот уже запущен");
+    }
+    console.log(`Запуск команды: ${pythonPath} ${botScriptPath}`);
+    botProcess = spawn(pythonPath, [botScriptPath], { detached: true });
 
-  try {
-    const response = await axios.post(
-      `https://api.telegram.org/bot${botToken}/setWebhook`,
-      {
-        url: `https://${req.hostname}:${port}/webhook`, // Пример: https://example.com/webhook
+    botProcess.stdout.on("data", (data) => {
+      console.log(`stdout: ${data}`);
+    });
+
+    botProcess.stderr.on("data", (data) => {
+      console.error(`stderr: ${data}`);
+    });
+
+    botProcess.on("close", (code) => {
+      console.log(`Процесс завершился с кодом: ${code}`);
+      botProcess = null;
+    });
+
+    res.send("Бот успешно запущен");
+  } else {
+    if (!botProcess) {
+      return res.send("Бот не запущен");
+    }
+
+    console.log("Остановка бота");
+
+    psTree(botProcess.pid, (err, children) => {
+      if (err) {
+        console.error("Ошибка при получении списка дочерних процессов:", err);
+        return res.status(500).send("Ошибка при остановке бота");
       }
-    );
-    console.log("Ответ от Telegram API:", response.data);
-    res.send("Бот успешно настроен");
-  } catch (error) {
-    console.error("Ошибка при настройке бота:", error.message);
-    console.log("Ответ от Telegram API:", error.response.data);
-    res.status(500).send("Ошибка при настройке бота");
+
+      [botProcess.pid].concat(children.map((p) => p.PID)).forEach((tpid) => {
+        try {
+          process.kill(tpid);
+        } catch (err) {
+          if (err.code !== "ESRCH") {
+            console.error(`Ошибка при завершении процесса ${tpid}:`, err);
+          }
+        }
+      });
+
+      botProcess = null;
+      res.send("Бот успешно остановлен");
+    });
   }
 });
 
