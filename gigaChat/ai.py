@@ -11,10 +11,10 @@ API_KEY = os.getenv('API_SBERBANK_KEY')
 chat = GigaChat(credentials=API_KEY, verify_ssl_certs=False, scope="GIGACHAT_API_PERS")
 
 def check_answer(query, text_to_check):
-    print(query[:-54])
+    print(query[:-55])
     system_message = SystemMessage(
         content=f"""
-            Вопрос :"{query[:-54]}".
+            Вопрос :"{query[:-55]}".
             Ответ: {text_to_check}.
             
             1) Является ли ответ на вопрос адекватным? (да/нет).

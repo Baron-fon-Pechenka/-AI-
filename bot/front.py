@@ -34,8 +34,7 @@ def rnd_text_response(msg: types.Message):
                     bot.send_message(chat_id=msg.chat.id,
                                      text='Ваш запрос в обработке, пожалуйста, подождите несколько секунд...')
                     ]
-    query = msg.text + '\nКУБГАУ' \
-                       '(Кубанский государственный аграрный университет)'
+    query = msg.text + '\nКУБГАУ (Кубанский государственный аграрный университет)'
     text, file_paths = ai.find_in_files(query)
     print(file_paths)
     right = ai.check_answer(query=query, text_to_check=text)
